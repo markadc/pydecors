@@ -55,7 +55,7 @@ def forever(interval=60, errback=None):
     return outer
 
 
-def safe(func):
+def safe(func, when_failed=False):
     """异常时返回False"""
 
     @wraps(func)
@@ -64,25 +64,29 @@ def safe(func):
             return func(*args, **kwargs)
         except Exception as e:
             logger.error('{}  ==>  {}'.format(e, func.__name__))
-            return False
+            return when_failed
 
     return inner
 
 
-def retry(times=5, rest=2):
+def retry(times=5, rest=2, is_raise=True, when_all_failed=False):
     """重试（当函数异常时，触发重试，重试全部失败时返回False）"""
 
     def outer(func):
         @wraps(func)
         def inner(*args, **kwargs):
+            err = None
             for i in range(times + 1):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
                     logger.error('{}  ==>  {}'.format(e, func.__name__))
                     time.sleep(rest)
-            logger.error('重试全部失败  ==>  {}'.format(func.__name__))
-            return False
+                    err = e
+            if is_raise:
+                raise err
+            logger.critical('重试全部失败  ==>  {}'.format(func.__name__))
+            return when_all_failed
 
         return inner
 
@@ -99,7 +103,7 @@ def min_work(seconds: int):
         def inner(*args, **kwargs):
             result = None
             while True:
-                if time.time() - begin > seconds:
+                if time.time() - begin >= seconds:
                     return result
                 result = func(*args, **kwargs)
 
