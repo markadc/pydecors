@@ -23,9 +23,9 @@ def type_check(func):
             if expected != inspect.Parameter.empty:
                 if default_value == inspect.Parameter.empty:
                     if not isinstance(value, expected):
-                        raise TypeError(f"参数'{name}'应该是{expected}而不是{type(value)}")
+                        raise TypeError(f"参数 '{name}' 应该是 {expected} 而不是 {type(value)}")
                 if value != default_value and not isinstance(value, expected):
-                    raise TypeError(f"参数'{name}'应该是{expected}而不是{type(value)}")
+                    raise TypeError(f"参数' {name} '应该是 {expected} 而不是 {type(value)}")
 
         return func(*args, **kwargs)
 
